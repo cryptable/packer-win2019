@@ -1,0 +1,6 @@
+**/*.iso
+image-configs/*
+!image-configs/FUNC-template.pkrvars.hcl
+.DS_Store
+output-windows2019
+packer_cache
