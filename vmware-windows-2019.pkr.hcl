@@ -225,6 +225,16 @@ build {
     ]
   }
 
+  provisioner "file" {
+    source = "./docs/02_Install_DC1.md"
+    destination = "C:\\Users\\vagrant\\Desktop"
+  }
+  
+  provisioner "file" {
+    source = "./docs/05_Install_RootCA.md"
+    destination = "C:\\Users\\vagrant\\Desktop"
+  }
+
 #  post-processor "vagrant" {
 #    keep_input_artifact  = true
 #    output               = "./output-windows2019/windows_2019_vmware.box"

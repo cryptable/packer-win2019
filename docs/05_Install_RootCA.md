@@ -1,6 +1,11 @@
 Standalone Root CA
 ==================
 
+Installation
+------------
+
+- https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-r2-and-2012/hh831348(v=ws.11)
+
 Install windows 2019
 
 Rename server
@@ -9,7 +14,7 @@ rename-computer ORCA1
 restart-computer
 ```
 
-Create CAPolicy.inf
+Create CAPolicy.inf in C:\Windows
 ```
 [Version]
 Signature="$Windows NT$"
@@ -60,7 +65,7 @@ CRL and AIA configuration
 
 ```Powershell
 certutil -setreg CA\CRLPublicationURLs "1:C:\Windows\system32\CertSrv\CertEnroll\%3%8.crl\n2:http://www.contoso.com/pki/%3%8.crl"
-certutil –setreg CA\CACertPublicationURLs "2:http://www.contoso.com/pki/%1_%3%4.crt"
+certutil -setreg CA\CACertPublicationURLs "2:http://www.contoso.com/pki/%1_%3%4.crt"
 Certutil -setreg CA\CRLOverlapPeriodUnits 12
 Certutil -setreg CA\CRLOverlapPeriod "Hours"
 Certutil -setreg CA\ValidityPeriodUnits 10
@@ -91,7 +96,8 @@ certutil -crl
 
 View the configuration
 ```Powershell
-Get-CAAuthorityInformationAccess | format-list and Get-CACRLDistributionPoint | format-list
+Get-CAAuthorityInformationAccess | format-list
+Get-CACRLDistributionPoint | format-list
 ```
 
 Retrieve the CA certificate
@@ -100,3 +106,34 @@ dir C:\Windows\system32\certsrv\certenroll\*.cr*
 copy C:\Windows\system32\certsrv\certenroll\*.cr* A:\
 dir A:\
 ```
+
+Testing your CA
+---------------
+
+- https://learn.microsoft.com/en-us/windows-server/networking/core-network-guide/cncg/server-certs/configure-the-server-certificate-template
+- https://learn.microsoft.com/en-us/answers/questions/431223/use-certreq-certutil-to-request-and-approve-a-cert
+- https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/certreq_1
+
+Remark: A standalone RootCA has no templates, because there is no AD to store them. It signs all the extensions which are delivered by the cert request.
+
+```
+New-Item .\certreq.inf
+Set-Content .\certreq.inf "[Version]
+Signature = `"`$WindowsNT`$`"
+
+[NewRequest]
+Subject = `"CN=Test`"
+Exportable = TRUE
+KeyLength = 2048
+
+[Strings]
+szCUSTOM_EXTENSION = 1.2.3.4.5.123.1.1
+szPK_PACS = 1.3.6.1.4.1.59685.8.5
+
+[RequestAttributes]
+CertificateTemplate=TestTemplate
+
+[Extensions]
+`%szCUSTOM_EXTENSION`% = `"{text}`"
+_continue_ = `"%szOID_PKIX_KP_CLIENT_AUTH%=00001000001500`"
+"
